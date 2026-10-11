@@ -695,6 +695,7 @@
     const C = palette();
     const h = React.createElement;
     const F = {
+      FormCardSection: settingsFormComponent("FormCardSection"),
       FormRow: settingsFormComponent("FormRow"),
       FormSwitchRow: settingsFormComponent("FormSwitchRow"),
       FormSwitch: settingsFormComponent("FormSwitch"),
@@ -707,8 +708,9 @@
       const cacheKey = String(key || "") + " " + String(label || "");
       if (nativeIconCache.has(cacheKey)) return nativeIconCache.get(cacheKey);
       const text = cacheKey.toLowerCase();
-      const patterns = /separator/.test(text) ? [/more_vertical/i, /dots_vertical/i, /ellipsis_vertical/i]
-        : /log.?edited|keep edited|edited messages/.test(text) ? [/eye_hidden/i, /visibility_off/i]
+      const patterns = /color|redname|namecolor/.test(text) ? [/paint_brush/i, /palette/i, /color/i]
+        : /separator/.test(text) ? [/more_vertical/i, /dots_vertical/i, /ellipsis_vertical/i, /more/i]
+        : /notify.?edit|track.?edit/.test(text) ? [/edit/i, /pencil/i, /audit_update/i]
         : /time|clock/.test(text) ? [/clock/i, /time/i]
         : /deleted|delete|ghost|ping/.test(text) ? [/eye_hidden/i, /delete/i, /trash/i, /message/i]
         : /edit|edited/.test(text) ? [/edit/i, /pencil/i, /audit_update/i]
@@ -813,7 +815,8 @@
             : h(RN.View, { key: "row-divider-" + groupIndex++, style: { height: 1, marginLeft: 28, backgroundColor: C.divider } }));
           cardRows.push(row);
         });
-        out.push(...cardRows);
+        if (F.FormCardSection) out.push(h(F.FormCardSection, { key: "settings-card-" + groupIndex++ }, ...cardRows));
+        else out.push(...cardRows);
         run = [];
         title = null;
       };
