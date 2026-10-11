@@ -252,7 +252,7 @@
     } });
     const message = String(entry.an || "Unknown") + " " + what + ":\n\n" + (entry.t || "(no message text)");
     try {
-      RN.Alert.alert("Ghost ping", message, buttons, { cancelable: true });
+      showDiscordAlert("gpl-ghost-ping", "Ghost ping", message, buttons);
     } catch (_) {
       toast("Ghost ping: " + entry.an + " " + what);
     }
@@ -645,7 +645,43 @@
     const ios = RN.Platform && RN.Platform.OS === "ios";
     const list = buttons.slice(0, ios ? 6 : 3);
     if (ios) list.push({ text: "Cancel", style: "cancel" });
-    try { RN.Alert.alert(title, message, list, { cancelable: true }); } catch (_) {}
+    try { showDiscordAlert("gpl-confirm", title, message, list); } catch (_) {}
+  }
+
+  function showDiscordAlert(id, title, content, buttons) {
+    const h = React.createElement;
+    const alerts = findByProps("openAlert", "dismissAlert");
+    const components = findByProps("AlertModal", "AlertActions", "AlertActionButton");
+    if (!alerts || !components) throw new Error("Discord alert components unavailable");
+    const actions = h(components.AlertActions, null, ...buttons.slice(0, 4).map((button, index) => h(components.AlertActionButton, {
+      key: id + "-action-" + index, text: button.text,
+      variant: button.style === "destructive" ? "destructive" : button.style === "cancel" ? "secondary" : "primary",
+      onPress: button.onPress,
+    })));
+    alerts.openAlert(id, h(components.AlertModal, { title, content, actions }));
+  }
+
+  function openNativeInputAlert(props) {
+    const api = findByProps("openAlert", "dismissAlert");
+    if (!api || typeof api.openAlert !== "function") throw new Error("Discord alert API unavailable");
+    api.openAlert(props.id, React.createElement(NativeInputAlert, props));
+  }
+
+  function NativeInputAlert(props) {
+    const [value, setValue] = React.useState(String(props.initialValue || ""));
+    const h = React.createElement;
+    const parts = findByProps("AlertModal", "AlertActions", "AlertActionButton");
+    const inputModule = findByProps("TextInput");
+    const Input = inputModule && inputModule.TextInput;
+    const dismiss = () => { try { findByProps("openAlert", "dismissAlert").dismissAlert(props.id); } catch (_) {} };
+    const save = () => { dismiss(); if (typeof props.onSave === "function") props.onSave(value); };
+    const field = Input
+      ? h(Input, { value, onChange: setValue, keyboardType: props.keyboardType, placeholder: "", autoCapitalize: "none", autoCorrect: false })
+      : h(RN.TextInput, { value, onChangeText: setValue, keyboardType: props.keyboardType, placeholder: "", autoCapitalize: "none", autoCorrect: false });
+    const actions = h(parts.AlertActions, null,
+      h(parts.AlertActionButton, { text: "Cancel", variant: "secondary", onPress: dismiss }),
+      h(parts.AlertActionButton, { text: "Save", variant: "primary", onPress: save }));
+    return h(parts.AlertModal, { title: props.title, content: props.content, extraContent: field, actions });
   }
 
   function palette() {
@@ -801,7 +837,7 @@
 
     const Title = (key, text) => Text({ key, style: { color: C.text, fontSize: 20, fontWeight: "700", paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 } }, text);
 
-    // Rows that sit next to each other are grouped into one rounded card with dividers.
+    // Render settings groups with Kettu's native table row components.
     const compose = (list) => {
       const out = [];
       let run = [];
@@ -815,7 +851,6 @@
           title = null;
           return;
         }
-        if (title) out.push(sectionHeader(title));
         const sectionRows = [];
         run.forEach((row, index) => {
           if (index) sectionRows.push(F.FormDivider
@@ -868,15 +903,8 @@
         while (recentMessages.size > count) recentMessages.delete(recentMessages.keys().next().value);
         refreshUI();
       };
-      if (RN.Alert && typeof RN.Alert.prompt === "function") {
-        RN.Alert.prompt("Maximum cached messages", "All Channels mode only. Higher values use more memory.", saveLimit, "plain-text", String(recentMessageLimit()), "number-pad");
-        return;
-      }
       try {
-        ui.alerts.showCustomAlert(MessageCacheLimitModal, {
-          initialValue: recentMessageLimit(),
-          onSave: saveLimit,
-        });
+        openNativeInputAlert({ id: "gpl-cache-limit", title: "Maximum cached messages", content: "All Channels mode only. Higher values use more memory.", initialValue: recentMessageLimit(), keyboardType: "number-pad", onSave: saveLimit });
       } catch (_) { toast("Could not open cache limit settings"); }
     };
     const cycleRetention = () => {
@@ -941,7 +969,8 @@
         Btn("test", "Send a test ghost ping", () => { addTestPing(); refreshUI(); }),
       ];
     }
-    return h(RN.ScrollView, { key: screen, contentContainerStyle: { paddingBottom: 24 } }, ...compose(content));
+    const buildLabel = Text({ key: "build", style: { color: C.sub, fontSize: 13, paddingHorizontal: 4, paddingBottom: 4 } }, "Build " + BUILD);
+    return h(RN.ScrollView, { key: screen, contentContainerStyle: { paddingHorizontal: 12, paddingTop: 20, paddingBottom: 24 } }, buildLabel, ...compose(content));
   }
 
   function onLoad() {
