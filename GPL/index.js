@@ -695,7 +695,7 @@
     const C = palette();
     const h = React.createElement;
     const F = {
-      FormCardSection: settingsFormComponent("FormCardSection"),
+      FormSection: settingsFormComponent("FormSection"),
       FormRow: settingsFormComponent("FormRow"),
       FormSwitchRow: settingsFormComponent("FormSwitchRow"),
       FormSwitch: settingsFormComponent("FormSwitch"),
@@ -808,15 +808,18 @@
           return;
         }
         if (title) out.push(sectionHeader(title));
-        const cardRows = [];
+        const sectionRows = [];
         run.forEach((row, index) => {
-          if (index) cardRows.push(F.FormDivider
+          if (index) sectionRows.push(F.FormDivider
             ? h(F.FormDivider, { key: "row-divider-" + groupIndex++ })
             : h(RN.View, { key: "row-divider-" + groupIndex++, style: { height: 1, marginLeft: 28, backgroundColor: C.divider } }));
-          cardRows.push(row);
+          sectionRows.push(row);
         });
-        if (F.FormCardSection) out.push(h(F.FormCardSection, { key: "settings-card-" + groupIndex++ }, ...cardRows));
-        else out.push(...cardRows);
+        if (title && F.FormSection) out.push(h(F.FormSection, { key: "settings-section-" + groupIndex++, title }, ...sectionRows));
+        else {
+          if (title) out.push(sectionHeader(title));
+          out.push(...sectionRows);
+        }
         run = [];
         title = null;
       };
