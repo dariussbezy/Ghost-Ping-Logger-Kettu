@@ -698,6 +698,7 @@
       FormSection: settingsFormComponent("FormSection"),
       FormRow: settingsFormComponent("FormRow"),
       FormSwitchRow: settingsFormComponent("FormSwitchRow"),
+      FormSwitch: settingsFormComponent("FormSwitch"),
       FormDivider: settingsFormComponent("FormDivider"),
     };
     const nativeIconCache = new Map();
@@ -718,12 +719,12 @@
         : /search|filter/.test(text) ? [/search/i, /filter/i]
         : /message|log/.test(text) ? [/message/i, /chat/i, /text/i]
         : /server|channel/.test(text) ? [/server/i, /channel/i]
-        : [/settings/i];
+        : null;
       let icon = null;
       try {
         const names = Object.keys(ui.assets.all || {});
         let name = null;
-        for (const pattern of patterns) { name = names.find((candidate) => pattern.test(candidate)); if (name) break; }
+        if (patterns) for (const pattern of patterns) { name = names.find((candidate) => pattern.test(candidate)); if (name) break; }
         if (name) {
           const source = ui.assets.getAssetIDByName(name);
           if (source != null) icon = h(Icon, { source });
@@ -758,8 +759,8 @@
           h(RN.View, { style: { width: 22, height: 22, borderRadius: 11, backgroundColor: right, borderWidth: 2, borderColor: C.divider } }),
           Text({ style: { color: C.sub, fontSize: 13, marginLeft: 8 } }, right));
       }
-      return h(RN.View, { style: { marginLeft: 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, backgroundColor: C.chip, maxWidth: "50%" } },
-        Text({ style: { color: rightColor || C.text, fontSize: 14, fontWeight: "600" }, numberOfLines: 2 }, right));
+      return h(RN.View, { style: { marginLeft: 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 18, backgroundColor: C.chip, maxWidth: 160, minWidth: 52, alignItems: "center" } },
+        Text({ style: { color: rightColor || C.text, fontSize: 14, fontWeight: "600", textAlign: "center" }, numberOfLines: 1 }, right));
     };
 
     const PressRow = (key, label, sub, onPress, right, rightColor) => mark(
@@ -769,7 +770,9 @@
           rowText(label, sub), valueChip(right, rightColor)));
 
     const switchRow = (key, label, sub, value, change) => mark(
-      F && F.FormSwitchRow
+      F && F.FormSwitch && F.FormRow
+        ? h(F.FormRow, { key, label, subLabel: sub, leading: settingIcon(key, label), trailing: h(F.FormSwitch, { value, onValueChange: change }) })
+        : F && F.FormSwitchRow
         ? h(F.FormSwitchRow, { key, label, subLabel: sub, leading: settingIcon(key, label), value, onValueChange: change })
         : h(RN.Pressable, { key, onPress: () => change(!value), accessibilityRole: "button", style: rowStyle },
           h(RN.View, { style: { flex: 1, paddingRight: 12 } },
@@ -793,28 +796,21 @@
       let run = [];
       let title = null;
       let groupIndex = 0;
-      const nativeSections = F && F.FormSection;
-      const sectionHeader = (name) => h(RN.View, { key: "sec-title-" + groupIndex++, style: { paddingHorizontal: 30, paddingTop: 24, paddingBottom: 6 } },
-        Text({ style: { color: C.acc, fontSize: 12, fontWeight: "700", letterSpacing: 0.8 } }, name.toUpperCase()));
+      const sectionHeader = (name) => h(RN.View, { key: "sec-title-" + groupIndex++, style: { paddingHorizontal: 30, paddingTop: 24, paddingBottom: 12 } },
+        Text({ style: { color: C.sub, fontSize: 18, fontWeight: "400" } }, name));
       const flush = () => {
         if (!run.length) {
           if (title) out.push(sectionHeader(title));
           title = null;
           return;
         }
-        if (nativeSections) {
-          const nativeRows = [];
-          run.forEach((row, index) => {
-            if (index && F.FormDivider) nativeRows.push(h(F.FormDivider, { key: "form-divider-" + groupIndex++ }));
-            nativeRows.push(row);
-          });
-          out.push(h(F.FormSection, { key: "form-section-" + groupIndex++, title: title || undefined }, ...nativeRows));
-          run = [];
-          title = null;
-          return;
-        }
         if (title) out.push(sectionHeader(title));
-        out.push(...run);
+        const cardRows = [];
+        run.forEach((row, index) => {
+          if (index) cardRows.push(h(RN.View, { key: "row-divider-" + groupIndex++, style: { height: 1, marginLeft: 28, backgroundColor: C.divider } }));
+          cardRows.push(row);
+        });
+        out.push(h(RN.View, { key: "settings-card-" + groupIndex++, style: { marginHorizontal: 28, borderRadius: 22, backgroundColor: C.card2, overflow: "hidden" } }, ...cardRows));
         run = [];
         title = null;
       };
