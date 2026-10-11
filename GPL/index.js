@@ -695,8 +695,6 @@
     const C = palette();
     const h = React.createElement;
     const F = {
-      CardSection: settingsFormComponent("CardSection"),
-      FormSection: settingsFormComponent("FormSection"),
       FormRow: settingsFormComponent("FormRow"),
       FormSwitchRow: settingsFormComponent("FormSwitchRow"),
       FormSwitch: settingsFormComponent("FormSwitch"),
@@ -709,7 +707,9 @@
       const cacheKey = String(key || "") + " " + String(label || "");
       if (nativeIconCache.has(cacheKey)) return nativeIconCache.get(cacheKey);
       const text = cacheKey.toLowerCase();
-      const patterns = /time|clock/.test(text) ? [/clock/i, /time/i]
+      const patterns = /separator/.test(text) ? [/more_vertical/i, /dots_vertical/i, /ellipsis_vertical/i]
+        : /log.?edited|keep edited|edited messages/.test(text) ? [/eye_hidden/i, /visibility_off/i]
+        : /time|clock/.test(text) ? [/clock/i, /time/i]
         : /deleted|delete|ghost|ping/.test(text) ? [/eye_hidden/i, /delete/i, /trash/i, /message/i]
         : /edit|edited/.test(text) ? [/edit/i, /pencil/i, /audit_update/i]
         : /ignore/.test(text) ? [/close_24px/i, /person/i, /ignore/i]
@@ -813,9 +813,7 @@
             : h(RN.View, { key: "row-divider-" + groupIndex++, style: { height: 1, marginLeft: 28, backgroundColor: C.divider } }));
           cardRows.push(row);
         });
-        if (F.CardSection) out.push(h(F.CardSection, { key: "settings-card-" + groupIndex++ }, ...cardRows));
-        else if (F.FormSection) out.push(h(F.FormSection, { key: "settings-section-" + groupIndex++ }, ...cardRows));
-        else out.push(...run);
+        out.push(...cardRows);
         run = [];
         title = null;
       };
