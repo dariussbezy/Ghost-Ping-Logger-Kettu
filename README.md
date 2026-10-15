@@ -1,4 +1,4 @@
-# Ghost Ping Logger
+# Ghost Ping Logger Kettu
 
 A Kettu plugin that detects deleted messages that pinged you, keeps them available for jump navigation, and works on its own or alongside Advanced Message Logger.
 
