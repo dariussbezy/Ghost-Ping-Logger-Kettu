@@ -1,3 +1,5 @@
+# THIS PLUGIN FOR KETTU IS NO LONGER MAINTAINED, MOVE ON TO RAIN AND CHOOSE THIS VERSION: https://github.com/dariussbezy/Ghost-Ping-Logger
+
 # Ghost Ping Logger Kettu
 
 A Kettu plugin that detects deleted messages that pinged you, keeps them available for jump navigation, and works on its own or alongside Advanced Message Logger.
@@ -19,7 +21,7 @@ A Kettu plugin that detects deleted messages that pinged you, keeps them availab
 In Kettu, go to **Settings → Plugins**, tap **+**, and paste:
 
 ```text
-https://raw.githubusercontent.com/dariussbezy/Ghost-Ping-Logger/main/GPL/
+https://raw.githubusercontent.com/dariussbezy/Ghost-Ping-Logger-Kettu/main/GPLK/
 ```
 
 Enable the plugin, then open its settings to choose what to track and display.
@@ -28,9 +30,6 @@ Enable the plugin, then open its settings to choose what to track and display.
 
 The existing project notes report testing on iOS 27 with Kettu 1.4.3 and Discord 305.1. Android and other client versions may behave differently.
 Please report bugs, crashes, and suggestions in the project's feedback channel.
-
-## Recommended for use with the Advanced Message Logger plugin.
-https://github.com/dariussbezy/Advanced-Message-Logger/
 
 ## Screenshots:
 
